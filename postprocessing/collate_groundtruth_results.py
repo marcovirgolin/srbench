@@ -91,6 +91,10 @@ df_results['algorithm'] = df_results['algorithm'].apply(lambda x: x.replace('sem
 df_results['algorithm'] = df_results['algorithm'].apply(lambda x: x.replace('FE_AFP','AFP_FE'))
 # rename GPGOMEA to GP-GOMEA
 df_results['algorithm'] = df_results['algorithm'].apply(lambda x: x.replace('GPGOMEA','GP-GOMEA'))
+# rename GPGOMEA to GP-GOMEA
+df_results['algorithm'] = df_results['algorithm'].apply(lambda x: x.replace('gpgLT','gpg'))
+# rename GPGOMEA to GP-GOMEA
+df_results['algorithm'] = df_results['algorithm'].apply(lambda x: x.replace('gpgRT','gpg (RT)'))
 # indicator of strogatz or feynman
 df_results['data_group'] = df_results['dataset'].apply(lambda x: 'Feynman' if 'feynman' in x else 'Strogatz') 
 
@@ -108,6 +112,17 @@ df_results.loc[:,'symbolic_solution'] = df_results['symbolic_solution'] & ~(df_r
 ##########
 # save results
 ##########
+if os.path.exists("../results/ground-truth_results.feather"):
+    new_algs = df_results["algorithm"].unique()
+    # load prev results and remove new algs (in case they were saved already) 
+    # in order to update them
+    df_prev = pd.read_feather("../results/ground-truth_results.feather")
+    df_prev = df_prev[~df_prev.algorithm.isin(new_algs)]
+    df_prev = df_prev[~df_prev.algorithm.str.startswith("GP-GOMEAv2")]
+    df_prev = df_prev[~df_prev.algorithm.str.startswith("gpg")]
+    df_prev.reset_index(inplace=True, drop=True)
+    df_results = pd.concat((df_prev, df_results))
+    df_results.reset_index(inplace=True, drop=True)
 df_results.to_feather('../results/ground-truth_results.feather')
 print('results saved to ../results/ground-truth_results.feather')
 

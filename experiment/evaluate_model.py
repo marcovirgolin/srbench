@@ -32,6 +32,8 @@ def evaluate_model(dataset, results_path, random_state, est_name, est,
     np.random.seed(random_state)
     if hasattr(est, 'random_state'):
         est.random_state = random_state
+    elif hasattr(est, "seed"):
+        est.seed = random_state
 
     ##################################################
     # setup data
@@ -40,7 +42,13 @@ def evaluate_model(dataset, results_path, random_state, est_name, est,
     if sym_data:
         true_model = get_sym_model(dataset)
     # generate train/test split
-    X_train, X_test, y_train, y_test = train_test_split(features, labels,
+    if est_name == "Operon100" or est_name == "GPGOMEA100":
+        # TODO: check this is being called, maybe print the est name above & quit
+        X_train, X_test, y_train, y_test = train_test_split(features, labels, 
+                                                train_size=min(len(labels)*0.75,100), 
+                                                random_state=random_state)
+    else:
+        X_train, X_test, y_train, y_test = train_test_split(features, labels,
                                                     train_size=0.75,
                                                     test_size=0.25,
                                                     random_state=random_state)
@@ -66,8 +74,10 @@ def evaluate_model(dataset, results_path, random_state, est_name, est,
         print('scaling y')
         sc_y = StandardScaler()
         y_train_scaled = sc_y.fit_transform(y_train.reshape(-1,1)).flatten()
+        y_test_scaled = sc_y.transform(y_test.reshape((-1,1))).flatten()
     else:
         y_train_scaled = y_train
+        y_test_scaled = y_test
 
     # add noise to the target
     if target_noise > 0:
@@ -104,7 +114,7 @@ def evaluate_model(dataset, results_path, random_state, est_name, est,
             if hasattr(est, genname):
                 print('setting',genname,'=2 for test')
                 setattr(est, genname, 2)
-        for popname in ['popsize','pop_size','population_size','val','npop']:
+        for popname in ['popsize','pop_size','population_size','val','npop','pop']:
             if hasattr(est, popname):
                 print('setting',popname,'=20 for test')
                 setattr(est, popname, 20)
@@ -112,7 +122,7 @@ def evaluate_model(dataset, results_path, random_state, est_name, est,
             setattr(est,'BF_try_time',1)
         if hasattr(est,'NN_epochs'):
             setattr(est,'NN_epochs',1)
-        for timename in ['time','max_time','time_out', 'time_limit']:
+        for timename in ['time','max_time','time_out', 'time_limit','t']:
             if hasattr(est, timename):
                 print('setting',timename,'= 10 for test')
                 setattr(est, timename, 10)
@@ -124,6 +134,10 @@ def evaluate_model(dataset, results_path, random_state, est_name, est,
     else:
         n_splits = 5
 
+    if hasattr(est, "set_validation_tracking"):
+        print("setting validation tracking over time")
+        est.set_validation_tracking(X_test_scaled, y_test_scaled)
+
     if skip_tuning:
         print('skipping tuning')
         grid_est = clone(est)
@@ -131,7 +145,7 @@ def evaluate_model(dataset, results_path, random_state, est_name, est,
         cv = KFold(n_splits=n_splits, shuffle=True,random_state=random_state)
 
         grid_est = HalvingGridSearchCV(est,cv=cv, param_grid=hyper_params,
-                verbose=2, n_jobs=1, scoring='r2', error_score=0.0)
+                verbose=0, n_jobs=1, scoring='r2', error_score=0.0)
 
     ################################################## 
     # Fit models
@@ -161,6 +175,7 @@ def evaluate_model(dataset, results_path, random_state, est_name, est,
         'time_time': time_time, 
         'target_noise': target_noise,
         'feature_noise': feature_noise,
+    #    'log' : best_est.get_progress_log(),
     }
     if sym_data:
         results['true_model'] = true_model

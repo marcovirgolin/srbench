@@ -21,6 +21,7 @@ symbolic_algs = [
     'FEAT',
     'EPLEX',
     'GP-GOMEA',
+    'GP-GOMEAv2',
     'gplearn',
     'ITEA',
     'MRGP',
@@ -37,12 +38,16 @@ sr_filenames = [
     'FEATRegressor',
     'EPLEXRegressor',
     'GPGOMEARegressor',
+    'gpgLT',
     'gplearn',
     'ITEARegressor',
     'MRGPRegressor',
     'OperonRegressor',
     'sembackpropgp'
     ]
+
+symbolic_algs = ["GP-GOMEAv2"]
+sr_filenames = ["gpg"]
 sr_name_to_filename = {k:v for k,v in zip(symbolic_algs, sr_filenames)}
 # read data from feather
 df_results = pd.read_feather('../results/black-box_results.feather')

@@ -69,7 +69,7 @@ if __name__ == '__main__':
                         default=0.0, type=float, help='Gaussian noise to add'
                         'to the target')
     parser.add_argument('-job_limit',action='store',dest='JOB_LIMIT',
-                        default=1000, type=int, 
+                        default=999999, type=int, 
                         help='Limit number of jobs submitted at once')
 
     args = parser.parse_args()
@@ -97,6 +97,7 @@ if __name__ == '__main__':
         datasets = glob(args.DATASET_DIR+'*/*.tsv.gz')
     else:
         datasets = glob(args.DATASET_DIR+'/*/*.tsv.gz')
+
     print('found',len(datasets),'datasets')
 
     #####################################################

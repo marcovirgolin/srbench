@@ -125,7 +125,7 @@ exp_basis = ["exp", "log", "sqrt"]
 hyper_params = [
     {
         "annealing": (True,), # (True, False)
-        "denoise": (True,), # (True, False)
+        #"denoise": (True,), # (True, False)
         "binary_operators": (["+", "-", "*", "/"],),
         "unary_operators": (
             [],
@@ -134,7 +134,7 @@ hyper_params = [
             # poly_basis + exp_basis,
         ),
         "populations": (20,), # (40, 80),
-        "alpha": (1.0,),
+        #"alpha": (1.0,),
         "model_selection": ("best",)
         # "alpha": (0.01, 0.1, 1.0, 10.0),
         # "model_selection": ("accuracy", "best"),
